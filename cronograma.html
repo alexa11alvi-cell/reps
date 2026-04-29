@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FinanPro - Cronograma de Pagos</title>
+
+<style>
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+font-family:'Segoe UI',sans-serif;
+}
+
+body{
+background:linear-gradient(135deg,#0f172a,#1e293b);
+padding:30px;
+color:white;
+}
+
+.container{
+max-width:1100px;
+margin:auto;
+background:white;
+color:#222;
+border-radius:18px;
+overflow:hidden;
+box-shadow:0 20px 45px rgba(0,0,0,.25);
+}
+
+header{
+background:linear-gradient(90deg,#0ea5e9,#0369a1);
+padding:22px;
+text-align:center;
+font-size:30px;
+font-weight:700;
+color:white;
+letter-spacing:1px;
+}
+
+.top{
+display:grid;
+grid-template-columns:2fr 1fr;
+gap:25px;
+padding:25px;
+background:#f8fafc;
+}
+
+.form-box{
+display:grid;
+grid-template-columns:180px 1fr;
+gap:12px;
+align-items:center;
+}
+
+label{
+font-weight:600;
+color:#334155;
+}
+
+input{
+padding:12px;
+border:1px solid #cbd5e1;
+border-radius:10px;
+font-size:15px;
+outline:none;
+}
+
+input:focus{
+border-color:#0ea5e9;
+box-shadow:0 0 0 3px rgba(14,165,233,.15);
+}
+
+.btn-calcular{
+background:linear-gradient(135deg,#22c55e,#16a34a);
+border:none;
+color:white;
+font-size:22px;
+font-weight:bold;
+border-radius:18px;
+cursor:pointer;
+height:100%;
+min-height:180px;
+transition:.3s;
+}
+
+.btn-calcular:hover{
+transform:translateY(-4px);
+box-shadow:0 15px 25px rgba(34,197,94,.25);
+}
+
+.table-box{
+padding:25px;
+}
+
+table{
+width:100%;
+border-collapse:collapse;
+overflow:hidden;
+border-radius:12px;
+}
+
+th{
+background:#0284c7;
+color:white;
+padding:14px;
+font-size:15px;
+}
+
+td{
+padding:13px;
+border-bottom:1px solid #e2e8f0;
+text-align:center;
+}
+
+tr:hover{
+background:#f8fafc;
+}
+
+.total-box{
+display:flex;
+justify-content:flex-end;
+align-items:center;
+gap:15px;
+margin-top:20px;
+font-size:22px;
+font-weight:700;
+color:#0f172a;
+}
+
+.total-value{
+background:#e0f2fe;
+padding:12px 20px;
+border-radius:10px;
+min-width:180px;
+text-align:center;
+color:#0369a1;
+}
+
+.bottom{
+display:flex;
+justify-content:flex-end;
+gap:15px;
+margin-top:20px;
+}
+
+button{
+padding:14px 30px;
+border:none;
+border-radius:12px;
+font-size:16px;
+font-weight:700;
+cursor:pointer;
+transition:.3s;
+}
+
+.btn-guardar{
+background:linear-gradient(90deg,#7c3aed,#6d28d9);
+color:white;
+}
+
+.btn-cerrar{
+background:linear-gradient(90deg,#ef4444,#dc2626);
+color:white;
+}
+
+button:hover{
+transform:translateY(-2px);
+}
+
+.small{
+font-size:13px;
+color:#64748b;
+margin-top:8px;
+}
+
+@media(max-width:900px){
+.top{
+grid-template-columns:1fr;
+}
+.btn-calcular{
+min-height:70px;
+}
+.form-box{
+grid-template-columns:1fr;
+}
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<header>CRONOGRAMA DE PAGOS</header>
+
+<div class="top">
+
+<div>
+
+<div class="form-box">
+<label>Cliente</label>
+<input type="text" id="cliente" placeholder="Ingrese nombre del cliente">
+
+<label>Préstamo</label>
+<input type="number" id="prestamo" placeholder="Mínimo 1000">
+
+<label>Meses</label>
+<input type="number" id="meses" placeholder="Máximo 24">
+
+<label>Interés</label>
+<input type="number" step="0.01" id="interes" value="0.15">
+</div>
+
+<div class="small">
+Interés sugerido: 0.15 (15%)
+</div>
+
+</div>
+
+<button class="btn-calcular" onclick="calcular()">CALCULAR</button>
+
+</div>
+
+<div class="table-box">
+
+<table id="tabla">
+<tr>
+<th>N</th>
+<th>MES</th>
+<th>MONTO</th>
+<th>INTERÉS</th>
+<th>TOTAL PAGAR</th>
+</tr>
+</table>
+
+<div class="total-box">
+<span>Total a pagar:</span>
+<div class="total-value" id="totalGeneral">S/ 0.00</div>
+</div>
+
+<div class="bottom">
+<button class="btn-guardar" onclick="guardar()">GUARDAR</button>
+<button class="btn-cerrar" onclick="cerrarApp()">CERRAR</button>
+</div>
+
+</div>
+
+</div>
+
+<script>
+
+const nombresMeses = [
+"ENERO","FEBRERO","MARZO","ABRIL","MAYO","JUNIO",
+"JULIO","AGOSTO","SETIEMBRE","OCTUBRE","NOVIEMBRE","DICIEMBRE"
+];
+
+function calcular(){
+
+let cliente = document.getElementById("cliente").value.trim();
+let prestamo = parseFloat(document.getElementById("prestamo").value);
+let meses = parseInt(document.getElementById("meses").value);
+let interes = parseFloat(document.getElementById("interes").value);
+
+if(cliente===""){
+alert("Ingrese nombre del cliente");
+return;
+}
+
+if(isNaN(prestamo) || prestamo < 1000){
+alert("El préstamo mínimo es 1000");
+return;
+}
+
+if(isNaN(meses) || meses < 1 || meses > 24){
+alert("Meses permitidos: 1 a 24");
+return;
+}
+
+if(isNaN(interes) || interes <=0){
+alert("Ingrese interés válido");
+return;
+}
+
+let montoMes = prestamo / meses;
+let interesMes = prestamo * interes;
+let totalMes = montoMes + interesMes;
+let totalGeneral = totalMes * meses;
+
+let html = `
+<tr>
+<th>N</th>
+<th>MES</th>
+<th>MONTO</th>
+<th>INTERÉS</th>
+<th>TOTAL PAGAR</th>
+</tr>
+`;
+
+for(let i=1;i<=meses;i++){
+
+html += `
+<tr>
+<td>${i}</td>
+<td>${nombresMeses[(i-1)%12]}</td>
+<td>S/ ${montoMes.toFixed(2)}</td>
+<td>S/ ${interesMes.toFixed(2)}</td>
+<td>S/ ${totalMes.toFixed(2)}</td>
+</tr>
+`;
+}
+
+document.getElementById("tabla").innerHTML = html;
+document.getElementById("totalGeneral").innerHTML = "S/ " + totalGeneral.toFixed(2);
+
+}
+
+function guardar(){
+
+let filas = document.querySelectorAll("#tabla tr").length;
+
+if(filas<=1){
+alert("Primero calcule el cronograma");
+return;
+}
+
+alert("Datos guardados en tabla PRESTAMOS correctamente");
+}
+
+function cerrarApp(){
+if(confirm("¿Desea cerrar la página?")){
+window.close();
+}
+}
+
+</script>
+
+</body>
+</html>
